@@ -1,5 +1,5 @@
 var Bot = require('./bot');
-var config = require('./node_modules/twit/config.js');
+var config = require('./config.js');
 var util = require('util');
 
 var bot = new Bot(config);
@@ -97,7 +97,7 @@ function performAction (key, params) {
 			});
 		},
 		'unknown': function() {
-			console.log("\nUnkown action");
+			console.log("\nUnknown action");
 		}
 	};
 
