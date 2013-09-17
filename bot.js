@@ -20,13 +20,6 @@ Bot.prototype.tweet = function (status, callback) {
 	this.twit.post('statuses/update', { status: status }, callback);
 };
 
-// 
-// search
-//
-Bot.prototype.search = function (terms, callback) {
-
-};
-
 //
 // retweet
 //
@@ -62,8 +55,17 @@ Bot.prototype.favorite = function (params, callback) {
 //
 // topical follow
 //
-Bot.prototype.searchFollow = function (status, callback) {
+Bot.prototype.searchFollow = function (params, callback) {
+	var self = this;
 
+	self.twit.get('search/tweets', params, function (err, reply) {
+		if(err) return callback(err);
+
+		var tweets = reply.statuses;
+		var target = randIndex(tweets).user.id_str;
+
+		self.twit.post('friendships/create', { id: target }, callback);
+	});
 };
 
 //
@@ -117,10 +119,6 @@ Bot.prototype.prune = function (callback) {
 		});
 	});
 };
-
-function searchTweetsHelper (params, callback) {
-
-}
 
 function randIndex (arr) {
 	var index = Math.floor(arr.length*Math.random());
