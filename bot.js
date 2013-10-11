@@ -6,6 +6,7 @@ var Twit = require('twit');
 
 var Bot = module.exports = function(config) { 
 	this.twit = new Twit(config);
+	this.name = config.name;
 };
 
 //

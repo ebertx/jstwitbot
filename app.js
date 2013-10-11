@@ -2,34 +2,37 @@ var Bot = require('./bot');
 var config = require('./config.js');
 var util = require('util');
 
-var bot = new Bot(config);
-
 console.log('jstwitbot: Running.');
 
-var weights = new Array();
-var weightCounter = 0;
+for(bot in config) {
 
-// build weights array
-for(action in config.weights) {
-	weightCounter += config.weights[action];
-	var tempAction = action;
-	weights.push({ "action" : action, "weight" : weightCounter });
+	console.log("Setting up " + config[bot].name);
+
+	var thisBot = new Bot(config[bot]);
+
+	// build weights array
+	var weights = new Array();
+	var weightCounter = 0;
+	for(action in config[bot].weights) {
+		weightCounter += config[bot].weights[action];
+		var tempAction = action;
+		weights.push({ "action" : action, "weight" : weightCounter });
+	}
+
+	var params = config[bot].params;
+	params.since = datestring();
+
+	// Bot's event loop
+	(function(thisBot, params) {
+		setInterval(function() {
+
+			var action = getAction();
+			performAction(thisBot, action, params);
+
+		}, config[bot].interval);
+	})(thisBot, params);
 }
 
-setInterval(function() {
-
-	// favorite or retweet popular web development tweets
-	var params = {
-		q: config.query
-		, since: datestring()
-		, result_type: 'mixed'
-		, limit: 10
-	};
-
-	var action = getAction();
-	performAction(action, params);
-
-}, config.interval);
 
 
 //get date string for today's date (e.g. '2011-01-01')
@@ -52,48 +55,43 @@ function getAction () {
 	}
 };
 
-function performAction (key, params) {
+function performAction (bot, key, params) {
 	var actions = {
 		'favorite': function(params) {
-			console.log("\nBegin favoriting");
 			bot.favorite(params, function(err, reply) {
 				if(err) return handleError(err);
 
-				console.log('Favorite response: ' + reply.id);
+				console.log(bot.name + ' favorited response: ' + reply.id);
 			});
 			},
 		'retweet': function(params) {
-			console.log("\nBegin retweeting");
 			bot.retweet(params, function(err, reply) {
 				if(err) return handleError(err);
 
-				console.log('Retweet response: ' + reply.id);
+				console.log(bot.name + ' retweeted response: ' + reply.id);
 			});
 		},
 		'mingle': function() {
-			console.log("\nBegin mingle");
 			bot.mingle(function(err, reply) {
 				if(err) return handleError(err);
 
 				var name = reply.screen_name;
-				console.log('Mingle: followed @' + name);
+				console.log(bot.name + ' mingled: followed @' + name);
 			});
 		},
 		'searchFollow': function(params) {
-			console.log("\nBegin searchFollow");
 			bot.searchFollow(params, function(err, reply) {
 				if(err) return handleError(err);
 
-				console.log('SearchFollow: followed @' + reply.screen_name);
+				console.log(bot.name + ' searchFollowed: followed @' + reply.screen_name);
 			});
 		},
 		'prune': function() {
-			console.log("\nBegin prune");
 			bot.prune(function(err, reply) { 
 				if(err) return handleError(err);
 
 				var name = reply.screen_name;
-				console.log('Prune: unfollowed @'+ name);
+				console.log(bot.name + ' pruned: unfollowed @'+ name);
 			});
 		},
 		'unknown': function() {
